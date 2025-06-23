@@ -1,0 +1,175 @@
+[
+  {
+    "category": "Pertanyaan Langsung",
+    "query": "apa isi surah al-fatihah ayat 7",
+    "expected_ids": [
+      "📖 Surah: Al-Fatihah | Ayat: 7"
+    ]
+  },
+  {
+    "query": "bunyi hadis shahih bukhari nomor 1",
+    "expected_ids": [
+      "📘 Hadis Shahih Bukhari No. 1 | Kitab: Permulaan Wahyu | Bab: Permulaan wahyu"
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+    "query": "bagaimana cara rasulullah tidur",
+    "expected_ids": [
+      "📘 Hadis Shahih Bukhari No. 5813 Kitab: Meminta Izin | Bab: Telentang",
+      "📘 Hadis Shahih Bukhari No. 114 Kitab: Ilmu | Bab: Membicarakan ilmu sebelum tidur",
+      "📘 Hadis Shahih Bukhari No. 6314 Kitab: Doa-doa | Bab: Tidur miring ke kanan"
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+ "query": "apa doa masuk wc",
+    "expected_ids": [
+      "📘 Hadis Jami` at-Tirmidzi No. 5 Kitab: Bersuci | Bab: Doa masuk wc",
+      "📘 Hadis Jami` at-Tirmidzi No. 6 Kitab: Bersuci | Bab: Doa masuk wc",
+      "📘 Hadis Shahih Bukhari No. 5847 Kitab: Do`a | Bab: Doa masuk wc",
+      "📘 Hadis Shahih Bukhari No. 139 Kitab: Wudlu | Bab: Bacaan do'a memasuki kamar kecil (WC)",
+      "📘 Hadis Shahih Bukhari No. 142 Kitab: Wudlu | Bab: Apa yang diucapkan ketika masuk WC"
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+    "query": "apa yang dimaksud dengan jalan yang lurus dalam islam",
+    "expected_ids": [
+      "📖 Surah: Al-Fatihah | Ayat: 6",
+      "📖 Surah: Al-Fatihah | Ayat: 7",
+      "📖 Surah: Yasin | Ayat: 4",
+      "📖 Surah: Az-Zukhruf | Ayat: 64"
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+   "query": "bagaimana cara wudhu Rasulullah yang benar",
+    "expected_ids": [
+      "📘 Hadis Jami` at-Tirmidzi No. 45 Kitab: Bersuci | Bab: Cara wudhu Rasulullah",
+      "📖 Surah: Al-Ma'idah | Ayat: 6",
+      "📘 Hadis Shahih Bukhari No. 159 Kitab: Wudlu | Bab: Wudlu' tiga kali-tiga kali",
+      "📘 Hadis Shahih Bukhari No. 164 Kitab: Wudlu | Bab: Berkumur-kumur dalam berwudlu"
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "jangan deketin zina, itu ayat mana ya?",
+    "expected_ids": [
+      "📖 Surah: Al-Isra' | Ayat: 32"
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "gimana sih aturannya kalo ada cewek nawarin diri buat dinikahin?",
+    "expected_ids": [
+      "📘 Hadis Shahih Bukhari No. 4726 Kitab: Nikah | Bab: Seorang perempuan menawarkan dirinya kepada seorang laki-laki shalih",
+      "📘 Hadis Shahih Bukhari No. 4727 Kitab: Nikah | Bab: Seorang perempuan menawarkan dirinya kepada seorang laki-laki shalih",
+      "📘 Hadis Shahih Bukhari No. 4721 Kitab: Nikah | Bab: Bolehklan seorang wanita menghibahkan dirinya kepada seseorang?"
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Saya pernah dengar cerita seorang sahabat yang mendatangi Nabi dan mengaku berzina, lalu dirajam. Bisa tolong carikan hadisnya di Bukhari?",
+    "expected_ids": [
+      "📘 Hadis Shahih Bukhari No. 6633 Kitab: Hukum-hukum | Bab: Diberi keputusan di masjid, namun pelaksanaan hukuman diluar masjid",
+      "📘 Hadis Shahih Bukhari No. 6430 Kitab: Orang-orang yang diperangi | Bab: Rajam bagi pezina yang sudah menikah di mushalla atau tanah lapang"
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Dalam Al-Quran kan ada larangan untuk tidak hanya melakukan zina, tapi bahkan mendekatinya saja tidak boleh. Di surah mana ayat spesifik yang melarang 'mendekati' perbuatan itu?",
+    "expected_ids": [
+      "📖 Surah: Al-Isra' | Ayat: 32"
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Teman saya beli budak dari pasar, ternyata budaknya lagi hamil. Dia gak boleh langsung 'make' kan ya? Kayaknya ada hadis Tirmidzi soal ini.",
+    "expected_ids": [
+      "📘 Hadis Jami` at-Tirmidzi No. 1050 Kitab: Nikah | Bab: Membeli hamba sahaya ternyata sedang hamil",
+      "📘 Hadis Jami` at-Tirmidzi No. 1489 Kitab: Ekspedisi | Bab: Dimakruhkan menggauli wanita tawanan hamil"
+    ]
+  },
+  {
+    "category": "Pertanyaan Multiturn",
+    "queries": [
+      "apa isi surah al-fil ayat 1 dan 2?",
+      "siapakah pasukan bergajah yang dimaksud dalam surah itu?"
+    ],
+    "expected_ids": [
+      "📖 Surah: Al-Fil | Ayat: 1",
+      "📖 Surah: Al-Fil | Ayat: 2"
+    ]
+  },
+  {
+    "category": "Pertanyaan Multiturn",
+    "queries": [
+      "jelaskan tentang hukuman bagi pencuri dalam islam",
+      "apakah hukuman itu berlaku untuk semua nilai barang curian?"
+    ],
+    "expected_ids": [
+      "📖 Surah: Al-Ma'idah | Ayat: 38",
+      "📘 Hadis Jami` at-Tirmidzi No. 1366 | Kitab: Hukum Hudud | Bab: Potong tangan, jika mencuri berapa?",
+      "📘 Hadis Shahih Bukhari No. 6291 | Kitab: Hukum hudud | Bab: Firman Allah \"Laki-laki dan perempuan yang mencuri, potonglah tanga keduanya\""
+    ]
+  },
+  {
+    "category": "Pertanyaan Lain (Perbandingan)",
+    "query": "apa beda hukuman zina di surah An-Nur dan An-Nisa?",
+    "expected_ids": [
+      "📖 Surah: An-Nur | Ayat: 2",
+      "📖 Surah: An-Nisa' | Ayat: 16",
+      "📖 Surah: An-Nisa' | Ayat: 15"
+    ]
+  },
+  {
+    "category": "Pertanyaan Lain (Sebab Turunnya Ayat)",
+    "query": "apa sebab turunnya ayat tentang larangan mendekati shalat saat mabuk?",
+    "expected_ids": [
+      "📖 Surah: An-Nisa' | Ayat: 43",
+      "📘 Hadis Jami` at-Tirmidzi No. 2952 | Kitab: Tafsir al Qur`an | Bab: Diantara surat annisa'"
+    ]
+  },
+  {
+    "category": "Pertanyaan Lain (Negasi)",
+"query": "hadis mana yang menyatakan bahwa tidak ada wasiat bagi ahli waris?",
+    "expected_ids": [
+      "📘 Hadis Jami` at-Tirmidzi No. 2046 Kitab: Wasiat | Bab: Tidak ada wasiat untuk ahli waris",
+      "📘 Hadis Shahih Bukhari No. 2535 Kitab: Washiyat | Bab: Wasiat dan sabda Nabi Shallallahu 'alaihi wa Sallam"
+    ]
+  },
+  {
+    "category": "Pertanyaan Langsung",
+    "query": "jelaskan kandungan surah an-nur ayat 2",
+    "expected_ids": [
+      "📖 Surah: An-Nur | Ayat: 2"
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+    "query": "hukum cambuk bagi pezinah",
+    "expected_ids": [
+      "📖 Surah: An-Nur | Ayat: 2",
+      "📖 Surah: An-Nur | Ayat: 3",
+      "📘 Hadis Shahih Bukhari No. 6329 Kitab: Hukum hudud | Bab: Pezina yang belum menikah dicambuk dan diasingkan"
+    ]
+  },
+  {
+   "query": "Al-Quran mengatur hukuman fisik bagi pelaku zina, yaitu dicambuk. Di surah dan ayat berapa aturan hukuman cambuk ini disebutkan?",
+    "expected_ids": [
+      "📖 Surah: An-Nur | Ayat: 2",
+      "📘 Hadis Shahih Bukhari No. 6329 Kitab: Hukum hudud | Bab: Pezina yang belum menikah dicambuk dan diasingkan",
+      "📘 Hadis Shahih Bukhari No. 2455 Kitab: Kesaksian | Bab: Persaksian orang yang menuduh, pencuri dan pezina",
+      "📘 Hadis Shahih Bukhari No. 6319 Kitab: Hukum hudud | Bab: Pezina hukumannya batu (rajam)"
+    ]
+  },
+  {
+    "category": "Pertanyaan Lain (Spesifik)",
+    "query": "bagaimana islam memandang perbuatan liwath?",
+    "expected_ids": [
+      "📘 Hadis Jami` at-Tirmidzi No. 1376 Kitab: Hukum Hudud | Bab: Hukuman liwath (homoseksual)",
+      "📖 Surah: An-Nisa' | Ayat: 16"
+    ]
+  }
+]
