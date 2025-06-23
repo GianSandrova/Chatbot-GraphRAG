@@ -37,18 +37,6 @@ services:
       - backend
     restart: unless-stopped
 
-# Mendefinisikan Jaringan yang sudah ada (external)
-# Kita akan menghubungkan kontainer yang ada ke jaringan ini
 networks:
   chatbot-net:
-    # Opsi 1 (Direkomendasikan): Buat jaringan ini terlebih dahulu
-    # dan hubungkan kontainer yang ada ke dalamnya.
-    driver: bridge
-
-    # Opsi 2 (Alternatif): Jika Anda sudah punya jaringan bersama,
-    # gunakan 'external: true'.
-    # external: true 
-    # name: nama_jaringan_yang_sudah_ada
-
-# Bagian volumes dihilangkan karena kita tidak membuat volume baru untuk
-# Neo4j dan Ollama dari file compose ini.
+    external: true
