@@ -16,7 +16,7 @@ services:
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=12345678 # Ganti dengan password Neo4j Anda yang sebenarnya
       - OLLAMA_HOST=http://ollama:11434
-      - GROQ_API_KEY=${GROQ_API_KEY} # Praktik terbaik: gunakan variabel dari environment host
+      - GROQ_API_KEY= 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 # Praktik terbaik: gunakan variabel dari environment host
     networks:
       - chatbot-net # Bergabung ke jaringan yang sama dengan kontainer lain
     restart: unless-stopped
