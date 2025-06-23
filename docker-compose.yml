@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # Layanan Backend
   backend:
@@ -8,18 +10,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Variabel untuk koneksi ke Neo4j
-      - NEO4J_URI=bolt://neo4j:7687
+      # Variabel disesuaikan untuk terhubung ke kontainer yang SUDAH ADA
+      # Gunakan nama kontainer yang sedang berjalan: 'neo4j-v5-3' dan 'ollama'
+      - NEO4J_URI=bolt://neo4j-v5-3:7687
       - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=12345678
-      # Variabel untuk koneksi ke Ollama
+      - NEO4J_PASSWORD=12345678 # Ganti dengan password Neo4j Anda yang sebenarnya
       - OLLAMA_HOST=http://ollama:11434
-      - GROQ_API_KEY=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
+      - GROQ_API_KEY=${GROQ_API_KEY} # Praktik terbaik: gunakan variabel dari environment host
     networks:
-      - chatbot-net
-    depends_on:
-      - neo4j   
-      - ollama  
+      - chatbot-net # Bergabung ke jaringan yang sama dengan kontainer lain
     restart: unless-stopped
 
   # Layanan Frontend Streamlit
@@ -38,40 +37,18 @@ services:
       - backend
     restart: unless-stopped
 
-  # Layanan Database Neo4j
-  neo4j:
-    image: neo4j:5.24-enterprise
-    container_name: neo4j-db
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    volumes:
-      - neo4j_data:/data
-      - ./neo4j_backup:/backups
-    environment:
-      - NEO4J_AUTH=neo4j/12345678
-      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
-    networks:
-      - chatbot-net
-    restart: unless-stopped
-
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama-service
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - chatbot-net
-    restart: unless-stopped
-
-# Mendefinisikan Jaringan Internal
+# Mendefinisikan Jaringan yang sudah ada (external)
+# Kita akan menghubungkan kontainer yang ada ke jaringan ini
 networks:
   chatbot-net:
+    # Opsi 1 (Direkomendasikan): Buat jaringan ini terlebih dahulu
+    # dan hubungkan kontainer yang ada ke dalamnya.
     driver: bridge
 
-# Mendefinisikan Volume untuk Penyimpanan Data Persisten
-volumes:
-  neo4j_data:
-  ollama_data:
+    # Opsi 2 (Alternatif): Jika Anda sudah punya jaringan bersama,
+    # gunakan 'external: true'.
+    # external: true 
+    # name: nama_jaringan_yang_sudah_ada
+
+# Bagian volumes dihilangkan karena kita tidak membuat volume baru untuk
+# Neo4j dan Ollama dari file compose ini.
