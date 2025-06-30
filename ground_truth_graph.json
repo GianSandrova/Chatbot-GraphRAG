@@ -4,7 +4,7 @@
     "query": "bagaimana islam memandang perbuatan liwath?",
     "expected_answers": [
       {
-        "id": "📘 Hadis Jami` at-Tirmidzi No. 1376",
+        "id": "📘 Hadis Jami` at-Tirmidzi No.1376",
         "must_have": ["info", "text", "translation"],
         "context": {
           "source_type": "hadith",
