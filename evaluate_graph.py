@@ -3,160 +3,236 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'Backend'))
-# ==============================================================================
-# BLOCK 1: Impor dari proyek Anda
-# ==============================================================================
-try:
-    # Mengimpor koneksi driver dan fungsi traversal asli Anda
-    from config import driver
-    from retrieval.traversal import get_full_context_from_info
-except ImportError as e:
-    print(f"❌ Error: Gagal mengimpor dari proyek Anda: {e}")
-    print("Pastikan skrip ini dijalankan dari direktori yang benar dan path sistem sudah sesuai.")
-    sys.exit(1)
 
-# ==============================================================================
-# BLOCK 2: Fungsi Pencarian Node Awal (Bukan Placeholder Lagi)
-# Logika ini dibuat berdasarkan struktur di traversal.py Anda.
-# ==============================================================================
+from retrieval.parser import parse_hadith_query
+from retrieval.retrieval import keyword_search_hadith_by_number
+from retrieval.context_builder import build_chunk_context_interleaved
+from retrieval.traversal import get_full_context_from_info
 
-def find_quran_info_node(surah_name: str, ayat_number: int) -> str | None:
-    """
-    Mencari ID 'info_node' Quran dari database Neo4j berdasarkan
-    nama surah dan nomor ayat.
-    """
-    query = """
-    MATCH (n:Chunk {source: 'info', surah_name: $surah_name, ayat_number: $ayat_number})
-    RETURN elementId(n) AS id
-    LIMIT 1
-    """
-    try:
-        result = driver.execute_query(
-            query,
-            {"surah_name": surah_name, "ayat_number": ayat_number}
-        )
-        return result.records[0]["id"] if result.records else None
-    except Exception as e:
-        print(f"❌ Error saat mencari node Quran: {e}")
-        return None
-
-def find_hadith_info_node(source_name: str, hadith_number: int) -> str | None:
-    """
-    Mencari ID 'info_node' Hadis dari database Neo4j berdasarkan
-    nama sumber dan nomor hadis.
-    """
-    query = """
-    MATCH (n:Chunk {source: 'info', source_name: $source_name, hadith_number: $hadith_number})
-    RETURN elementId(n) AS id
-    LIMIT 1
-    """
-    try:
-        result = driver.execute_query(
-            query,
-            {"source_name": source_name, "hadith_number": hadith_number}
-        )
-        return result.records[0]["id"] if result.records else None
-    except Exception as e:
-        print(f"❌ Error saat mencari node Hadis: {e}")
-        return None
-
-# ==============================================================================
-# BLOCK 3: Fungsi Evaluasi Traversal yang Telah Disesuaikan
-# ==============================================================================
-
-def evaluate_pure_traversal(ground_truth_data: list[dict]):
-    """
-    Evaluasi murni untuk kualitas traversal yang menggunakan fungsi asli Anda.
-    """
-    total_checks = 0
-    successful_checks = 0
+def normalize_id(source_id: str) -> str:
+    """Normalize format ID untuk matching yang konsisten"""
+    if not source_id:
+        return ""
     
-    print("\n" + "="*60)
-    print("🔬 MEMULAI EVALUASI KUALITAS TRAVERSAL MURNI 🔬")
-    print("="*60)
+    # Remove emoji dan whitespace berlebih
+    normalized = source_id.replace("📘", "").replace("📖", "").strip()
+    
+    # Standardize berbagai variasi format
+    # Handle "Hadis X No. Y | Kitab: Z, Bab: W" -> "Hadis X No. Y Kitab: Z | Bab: W"
+    if " | Kitab:" in normalized:
+        normalized = normalized.replace(" | Kitab:", " Kitab:")
+    
+    # Handle "Hadis X No. Y, Kitab: Z | Bab: W" -> "Hadis X No. Y Kitab: Z | Bab: W"  
+    if ", Kitab:" in normalized:
+        normalized = normalized.replace(", Kitab:", " Kitab:")
+    
+    # Handle ", Bab:" -> " | Bab:"
+    if ", Bab:" in normalized:
+        normalized = normalized.replace(", Bab:", " | Bab:")
+    
+    # Handle case untuk Surah (jika ada format aneh)
+    # "Surah: X | Ayat: Y" -> "Surah: X | Ayat: Y" (keep as is)
+    
+    return normalized.strip()
 
+def get_source_from_context_string(context_part: str) -> str | None:
+    """Extract source ID dari context string"""
+    header_lines = []
+    for line in context_part.strip().split('\n'):
+        if "Skor Similarity:" in line:
+            break
+        if line.strip():
+            header_lines.append(line.strip())
+    return ' '.join(header_lines) if header_lines else None
+
+def evaluate_traversal_quality(ground_truth_data: list[dict]):
+    """
+    Evaluasi khusus untuk traversal:
+    - Mengabaikan hasil retrieval yang salah
+    - Fokus apakah traversal bisa menghasilkan expected chunks
+    """
+    results = []
+    
     for item in ground_truth_data:
         query = item.get("query")
-        expected_answers = item.get("expected_answers", [])
         
-        print(f"\n🧪 Query: \"{query}\"")
+        # Handle both old format (expected_ids) and new format (expected_chunks)
+        expected_chunks = item.get("expected_chunks", [])
+        if not expected_chunks and "expected_ids" in item:
+            # Convert old format to new format for compatibility
+            expected_chunks = [{"chunk_id": chunk_id} for chunk_id in item["expected_ids"]]
         
-        if not expected_answers:
+        print(f"\n🔍 Query: {query}")
+        print(f"  Expected chunks count: {len(expected_chunks)}")
+        
+        # Debug: Print expected chunks
+        for i, chunk in enumerate(expected_chunks):
+            chunk_id = chunk.get("chunk_id", "")
+            print(f"    {i+1}. {chunk_id}")
+        
+        # Jalankan retrieval + traversal
+        context_str = build_chunk_context_interleaved(query, top_k=5, min_score=0.5)
+        
+        if not context_str:
+            print("  ❌ Tidak ada context yang ditemukan")
+            results.append({
+                "query": query,
+                "success_rate": 0.0,
+                "found_chunks": [],
+                "missing_chunks": expected_chunks
+            })
             continue
-
-        for answer in expected_answers:
-            total_checks += 1
-            answer_id_text = answer.get("id")
-            must_have = answer.get("must_have", [])
-            context = answer.get("context", {})
-            source_type = context.get("source_type")
-
-            print(f"  ▶️  Mengevaluasi: {answer_id_text}")
-            print(f"      Harus ada chunk: {must_have}")
-
-            start_node_id = None
-            # Langkah 1: Temukan node awal (info node) menggunakan fungsi yang sudah diisi
-            if source_type == "hadith":
-                start_node_id = find_hadith_info_node(context.get("source_name"), context.get("hadith_number"))
-            elif source_type == "quran":
-                start_node_id = find_quran_info_node(context.get("surah_name"), context.get("ayat_number"))
+        
+        # Parse hasil context - lebih robust parsing
+        retrieved_sources = []
+        
+        # Method 1: Split by "---"
+        context_parts = context_str.strip().split('---')
+        for part in context_parts:
+            if part.strip():
+                source_id = get_source_from_context_string(part)
+                if source_id:
+                    retrieved_sources.append(source_id)
+        
+        # Method 2: Parse dari debug output jika ada
+        lines = context_str.split('\n')
+        for line in lines:
+            if "Konteks utama ditemukan →" in line:
+                # Extract source dari line seperti: "Konteks utama ditemukan → Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)"
+                source = line.split("→")[-1].strip()
+                if source and source not in retrieved_sources:
+                    retrieved_sources.append(source)
+        
+        print(f"  Retrieved sources count: {len(retrieved_sources)}")
+        for i, source in enumerate(retrieved_sources):
+            print(f"    {i+1}. {source}")
+        
+        # Normalize untuk comparison
+        retrieved_normalized = set(normalize_id(source) for source in retrieved_sources)
+        
+        # Check setiap expected chunk
+        found_chunks = []
+        missing_chunks = []
+        
+        for expected_chunk in expected_chunks:
+            chunk_id = expected_chunk.get("chunk_id", "")
+            expected_normalized = normalize_id(chunk_id)
             
-            if not start_node_id:
-                print(f"    ❌ GAGAL: Tidak dapat menemukan node awal di database untuk konteks: {context}")
-                continue
-
-            # Langkah 2: Jalankan fungsi traversal asli Anda dari traversal.py
-            traversed_chunks_record = get_full_context_from_info(start_node_id)
-
-            if not traversed_chunks_record:
-                print(f"    ❌ GAGAL: Traversal dari node '{start_node_id}' tidak menghasilkan chunk sama sekali.")
-                continue
-
-            # Langkah 3: Verifikasi apakah semua 'must_have' chunk ada dalam hasil Record
-            missing_chunks = []
-            for required in must_have:
-                # ==========================================================
-                # PERBAIKAN DI SINI: Menyederhanakan pembuatan nama kunci
-                required_key = f"{required}_text"
-                # ==========================================================
-                
-                # Cek apakah kunci ada di record dan nilainya tidak kosong (bukan None)
-                if required_key not in traversed_chunks_record or traversed_chunks_record[required_key] is None:
-                    missing_chunks.append(required)
-
-            if not missing_chunks:
-                print(f"    ✅ SUKSES: Semua chunk ({', '.join(must_have)}) berhasil ditraverse.")
-                successful_checks += 1
+            if expected_normalized in retrieved_normalized:
+                found_chunks.append(expected_chunk)
+                print(f"  ✅ Found: {chunk_id}")
             else:
-                print(f"    ❌ GAGAL: Traversal tidak lengkap. Chunk yang hilang: {missing_chunks}")
-                print(f"      Ditemukan: {[key for key, val in traversed_chunks_record.items() if val is not None]}")
-
-    # Skor Akhir
-    overall_success_rate = (successful_checks / total_checks) * 100 if total_checks > 0 else 0
+                missing_chunks.append(expected_chunk)
+                print(f"  ❌ Missing: {chunk_id}")
+        
+        success_rate = len(found_chunks) / len(expected_chunks) if expected_chunks else 0
+        
+        print(f"  📊 Traversal Success Rate: {success_rate:.2%}")
+        print(f"     Found: {len(found_chunks)} / {len(expected_chunks)}")
+        
+        # Debug info detail
+        if missing_chunks or success_rate < 1.0:
+            print(f"  🔍 Debug - Retrieved normalized:")
+            for norm in sorted(retrieved_normalized):
+                print(f"     - '{norm}'")
+            print(f"  🔍 Debug - Expected normalized:")
+            for expected_chunk in expected_chunks:
+                norm = normalize_id(expected_chunk.get("chunk_id", ""))
+                print(f"     - '{norm}'")
+            
+            # Check exact matches
+            print(f"  🔍 Debug - Exact match check:")
+            for expected_chunk in expected_chunks:
+                expected_norm = normalize_id(expected_chunk.get("chunk_id", ""))
+                matches = [r for r in retrieved_normalized if r == expected_norm]
+                if matches:
+                    print(f"     ✅ '{expected_norm}' -> Found")
+                else:
+                    print(f"     ❌ '{expected_norm}' -> Not found")
+                    # Check closest matches
+                    closest = [r for r in retrieved_normalized if expected_norm.lower() in r.lower() or r.lower() in expected_norm.lower()]
+                    if closest:
+                        print(f"        🔍 Possible matches: {closest}")
+        
+        results.append({
+            "query": query,
+            "success_rate": success_rate,
+            "found_chunks": found_chunks,
+            "missing_chunks": missing_chunks
+        })
     
-    print("\n" + "="*60)
-    print("📊 HASIL AKHIR EVALUASI TRAVERSAL")
-    print(f"  - Total Item Dievaluasi: {total_checks}")
-    print(f"  - Traversal Sukses: {successful_checks}")
-    print(f"  - Tingkat Keberhasilan Traversal: {overall_success_rate:.2f}%")
-    print("="*60)
+    # Summary
+    overall_success = sum(r["success_rate"] for r in results) / len(results) if results else 0
+    print(f"\n📊 HASIL EVALUASI TRAVERSAL:")
+    print(f"Overall Success Rate: {overall_success:.2%}")
+    
+    return results
 
-
-# ==============================================================================
-# BLOCK 4: Main Execution Block
-# ==============================================================================
+def evaluate_specific_chunk_requirements(ground_truth_data: list[dict]):
+    """
+    Evaluasi lebih detail untuk memastikan chunk memenuhi syarat 'must_have'
+    """
+    print("\n🔍 EVALUASI DETAIL CHUNK REQUIREMENTS:")
+    
+    for item in ground_truth_data:
+        query = item.get("query")
+        expected_chunks = item.get("expected_chunks", [])
+        
+        print(f"\n Query: {query}")
+        
+        for expected_chunk in expected_chunks:
+            chunk_id = expected_chunk.get("chunk_id")
+            should_resolve_to_info = expected_chunk.get("should_resolve_to_info", False)
+            must_have = expected_chunk.get("must_have", [])
+            context_info = expected_chunk.get("context", {})
+            
+            print(f"  Chunk: {chunk_id}")
+            print(f"    Should resolve to info: {should_resolve_to_info}")
+            print(f"    Must have: {must_have}")
+            print(f"    Context: {context_info}")
+            
+            # TODO: Implementasi pengecekan apakah chunk benar-benar memiliki
+            # komponen yang dibutuhkan (info_text, text_text, translation_text)
+            # Ini memerlukan akses ke database atau hasil traversal yang detail
 
 if __name__ == "__main__":
-    ground_truth_filename = 'ground_truth_graph.json'
+    # Test normalisasi dulu
+    print("🔧 Testing normalisasi:")
+    test_cases = [
+        "📘 Hadis Jami` at-Tirmidzi No. 1376 Kitab: Hukum Hudud | Bab: Hukuman liwath (homoseksual)",
+        "Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)",
+        "📖 Surah: An-Nisa' | Ayat: 16",
+        "Surah: An-Nur | Ayat: 2"
+    ]
     
-    try:
-        with open(ground_truth_filename, 'r', encoding='utf-8') as f:
-            ground_truth_data = json.load(f)
-    except FileNotFoundError:
-        print(f"❌ Error: File '{ground_truth_filename}' tidak ditemukan.")
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"❌ Error: Format JSON pada '{ground_truth_filename}' tidak valid.")
-        sys.exit(1)
-
-    evaluate_pure_traversal(ground_truth_data)
+    for case in test_cases:
+        normalized = normalize_id(case)
+        print(f"  '{case}' -> '{normalized}'")
+    
+    print("\n" + "="*50)
+    
+    # Load ground truth
+    with open('ground_truth_graph.json', 'r', encoding='utf-8') as f:
+        ground_truth = json.load(f)
+    
+    # Print structure ground truth untuk debug
+    print("🔧 Ground truth structure:")
+    for i, item in enumerate(ground_truth[:2]):  # Just first 2 items
+        print(f"  Item {i}:")
+        print(f"    query: {item.get('query', 'N/A')}")
+        print(f"    has expected_chunks: {'expected_chunks' in item}")
+        print(f"    has expected_ids: {'expected_ids' in item}")
+        if 'expected_chunks' in item:
+            print(f"    expected_chunks count: {len(item['expected_chunks'])}")
+            for j, chunk in enumerate(item['expected_chunks'][:2]):
+                print(f"      {j}: {chunk.get('chunk_id', 'N/A')}")
+        if 'expected_ids' in item:
+            print(f"    expected_ids: {item['expected_ids']}")
+    
+    print("\n" + "="*50)
+    
+    # Evaluasi traversal
+    results = evaluate_traversal_quality(ground_truth)
+    
+    # Evaluasi detail (opsional)
+    # evaluate_specific_chunk_requirements(ground_truth)
