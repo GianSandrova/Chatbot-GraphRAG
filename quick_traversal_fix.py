@@ -1,7 +1,7 @@
 # quick_traversal_fix.py
 # Solusi cepat untuk memperbaiki evaluasi traversal Anda
 
-from config import driver
+from Backend.config import driver
 from retrieval.traversal import find_info_chunk_id, get_full_context_from_info
 
 def check_traversal_completeness(chunk_id, source_id, score):
