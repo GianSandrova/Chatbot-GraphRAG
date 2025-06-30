@@ -5,7 +5,7 @@
     "expected_answers": [
       {
         "id": "📘 Hadis Jami` at-Tirmidzi No. 1376",
-        "must_have": ["info", "text", "translation"],
+        "must_have": ["info_text", "text_text", "translation_text"],
         "context": {
           "source_type": "hadith",
           "source_name": "Jami` at-Tirmidzi",
@@ -14,7 +14,7 @@
       },
       {
         "id": "📖 Surah: An-Nisa' | Ayat: 16",
-        "must_have": ["info", "text", "translation", "tafsir"],
+        "must_have": ["info_text", "text_text", "translation_text", "tafsir_text"],
         "context": {
           "source_type": "quran",
           "surah_name": "An-Nisa'",
