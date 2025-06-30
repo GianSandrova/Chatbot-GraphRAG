@@ -78,7 +78,7 @@ def extract_base_identifier(full_source: str) -> str:
     return normalized
 
 def parse_retrieval_results_from_context(context_str: str) -> list[str]:
-    """Parse hasil retrieval dari context string yang lebih robust"""
+    """Parse hasil retrieval dari context string - fokus pada hasil traversal graph"""
     retrieved_sources = []
     
     if not context_str:
@@ -89,25 +89,28 @@ def parse_retrieval_results_from_context(context_str: str) -> list[str]:
     for line in lines:
         line = line.strip()
         
-        # Method 1: Parse dari "Konteks utama ditemukan →" (untuk hadis dan quran)
+        # Method 1: Parse dari "Konteks utama ditemukan →" (hasil traversal utama)
         if "Konteks utama ditemukan →" in line:
             source = line.split("→")[-1].strip()
             if source and source not in retrieved_sources:
                 retrieved_sources.append(source)
                 continue
         
-        # Method 2: Parse dari "Tambahan konteks:" (untuk hadis tetangga)
-        if "Tambahan konteks:" in line:
+        # Method 2: Parse dari "↪️  Tambahan konteks:" (hasil traversal tambahan/tetangga)
+        if "↪️  Tambahan konteks:" in line:
             source = line.split(":")[-1].strip()
             if source and source not in retrieved_sources:
                 retrieved_sources.append(source)
                 continue
         
-        # Method 3: Parse dari pattern "↪️  Tambahan konteks: Hadis..."
-        if "↪️  Tambahan konteks:" in line:
-            source = line.split(":")[-1].strip()
-            if source and source not in retrieved_sources:
-                retrieved_sources.append(source)
+        # Method 3: Parse dari "      ↪️  Tambahan konteks:" (dengan indentasi)
+        if "Tambahan konteks:" in line and ("Hadis" in line or "Surah" in line):
+            # Split by : and take the last part that contains the source
+            parts = line.split(":")
+            if len(parts) >= 2:
+                source = ":".join(parts[1:]).strip()
+                if source and source not in retrieved_sources:
+                    retrieved_sources.append(source)
                 continue
     
     return retrieved_sources
@@ -144,8 +147,8 @@ def convert_ground_truth_format(ground_truth_data: list[dict]) -> list[dict]:
 def evaluate_traversal_quality(ground_truth_data: list[dict]):
     """
     Evaluasi khusus untuk traversal:
-    - Mengabaikan hasil retrieval yang salah
-    - Fokus apakah traversal bisa menghasilkan expected chunks
+    - Fokus apakah traversal berhasil mengambil node-node yang berelasi
+    - Mengabaikan apakah hasil retrieval tepat atau tidak
     """
     # Convert format jika perlu
     if ground_truth_data and "expected_answers" in ground_truth_data[0]:
@@ -178,12 +181,13 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             })
             continue
         
-        # Parse hasil context dengan method yang lebih robust
+        # Parse hasil context - fokus pada hasil traversal
         retrieved_sources = parse_retrieval_results_from_context(context_str)
         
-        print(f"  Retrieved sources count: {len(retrieved_sources)}")
+        print(f"  📊 Hasil Traversal Graph:")
+        print(f"    Total sources ditemukan: {len(retrieved_sources)}")
         for i, source in enumerate(retrieved_sources):
-            print(f"    {i+1}. {source}")
+            print(f"      {i+1}. {source}")
         
         # Extract base identifiers untuk matching
         retrieved_base_ids = set()
@@ -192,9 +196,9 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             if base_id:  # Only add non-empty base IDs
                 retrieved_base_ids.add(base_id)
         
-        print(f"  Base IDs from retrieved: {retrieved_base_ids}")
+        print(f"    Base IDs: {retrieved_base_ids}")
         
-        # Check setiap expected chunk
+        # Check setiap expected chunk terhadap hasil traversal
         found_chunks = []
         missing_chunks = []
         
@@ -202,16 +206,16 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             chunk_id = expected_chunk.get("chunk_id", "")
             expected_base_id = extract_base_identifier(chunk_id)
             
-            print(f"  🔍 Looking for: '{expected_base_id}'")
+            print(f"  🎯 Mencari: '{expected_base_id}'")
             
-            # Check exact match atau partial match untuk base identifier
+            # Check exact match
             found = False
+            matched_source = None
+            
             for retrieved_base in retrieved_base_ids:
-                print(f"    Comparing with: '{retrieved_base}'")
-                
                 if expected_base_id == retrieved_base:
                     found = True
-                    print(f"    ✅ Exact match found!")
+                    matched_source = retrieved_base
                     break
                 
                 # Fallback: check similarity untuk hadis
@@ -226,7 +230,7 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
                         exp_collection and ret_collection and 
                         exp_collection.group(1).strip() == ret_collection.group(1).strip()):
                         found = True
-                        print(f"    ✅ Hadis match found (same collection & number)!")
+                        matched_source = retrieved_base
                         break
                 
                 # Fallback: check similarity untuk Quran
@@ -248,29 +252,29 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
                         if (exp_surah_normalized == ret_surah_normalized and 
                             exp_ayat.group(1) == ret_ayat.group(1)):
                             found = True
-                            print(f"    ✅ Quran match found (same surah & ayat)!")
+                            matched_source = retrieved_base
                             break
             
             if found:
                 found_chunks.append(expected_chunk)
-                print(f"  ✅ Found: {chunk_id}")
+                print(f"    ✅ DITEMUKAN oleh traversal: {matched_source}")
             else:
                 missing_chunks.append(expected_chunk)
-                print(f"  ❌ Missing: {chunk_id}")
+                print(f"    ❌ TIDAK ditemukan oleh traversal")
         
         success_rate = len(found_chunks) / len(expected_chunks) if expected_chunks else 0
         
-        print(f"  📊 Traversal Success Rate: {success_rate:.2%}")
-        print(f"     Found: {len(found_chunks)} / {len(expected_chunks)}")
+        print(f"\n  📊 EVALUASI TRAVERSAL GRAPH:")
+        print(f"     Success Rate: {success_rate:.2%}")
+        print(f"     Berhasil ditraverse: {len(found_chunks)} / {len(expected_chunks)}")
         
-        # Debug info detail untuk missing chunks
-        if missing_chunks:
-            print(f"  🔍 Debug - Detailed comparison:")
-            for expected_chunk in missing_chunks:
-                expected_base = extract_base_identifier(expected_chunk.get("chunk_id", ""))
-                print(f"     Expected: '{expected_base}'")
-                for retrieved_base in retrieved_base_ids:
-                    print(f"       vs Retrieved: '{retrieved_base}'")
+        # Analisis traversal
+        if success_rate == 1.0:
+            print(f"     🎉 PERFECT! Traversal berhasil menemukan semua expected chunks")
+        elif success_rate >= 0.5:
+            print(f"     ✅ GOOD! Traversal berhasil menemukan sebagian besar chunks")
+        else:
+            print(f"     ⚠️  NEEDS IMPROVEMENT! Traversal perlu diperbaiki")
         
         results.append({
             "query": query,
@@ -278,13 +282,26 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             "found_chunks": found_chunks,
             "missing_chunks": missing_chunks,
             "retrieved_sources": retrieved_sources,
-            "context_debug": context_str[:500] + "..." if len(context_str) > 500 else context_str
+            "traversal_analysis": {
+                "total_sources_found": len(retrieved_sources),
+                "expected_vs_found": f"{len(found_chunks)}/{len(expected_chunks)}"
+            }
         })
     
     # Summary
     overall_success = sum(r["success_rate"] for r in results) / len(results) if results else 0
-    print(f"\n📊 HASIL EVALUASI TRAVERSAL:")
-    print(f"Overall Success Rate: {overall_success:.2%}")
+    print(f"\n🎯 HASIL EVALUASI GRAPH TRAVERSAL:")
+    print(f"Overall Traversal Success Rate: {overall_success:.2%}")
+    
+    # Analisis detail
+    perfect_count = sum(1 for r in results if r["success_rate"] == 1.0)
+    good_count = sum(1 for r in results if 0.5 <= r["success_rate"] < 1.0)
+    poor_count = sum(1 for r in results if r["success_rate"] < 0.5)
+    
+    print(f"📈 Breakdown:")
+    print(f"   Perfect (100%): {perfect_count} queries")
+    print(f"   Good (≥50%): {good_count} queries") 
+    print(f"   Needs Work (<50%): {poor_count} queries")
     
     return results
 
@@ -317,19 +334,30 @@ if __name__ == "__main__":
         base_id = extract_base_identifier(case)
         print(f"  '{case}' -> '{base_id}'")
     
-    print("\n" + "="*50)
+    print("\n" + "="*60)
     
     # Load ground truth
     with open('ground_truth_graph.json', 'r', encoding='utf-8') as f:
         ground_truth = json.load(f)
     
-    # Test dengan single query dulu
-    single_test = ground_truth[:1]  # Ambil query pertama saja
+    print("🎯 EVALUASI GRAPH TRAVERSAL")
+    print("Focus: Mengevaluasi kemampuan traversal dalam mengambil node-node yang berelasi")
+    print("=" * 60)
     
-    print("🧪 Testing with single query first...")
-    results = evaluate_traversal_quality(single_test)
+    # Evaluasi semua queries atau hanya single test
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--single":
+        print("🧪 Mode: Single query test")
+        test_data = ground_truth[:1]
+    else:
+        print("🧪 Mode: Full evaluation")
+        test_data = ground_truth
     
-    # Test debug parsing juga
-    query = single_test[0]["query"]
-    context_str = build_chunk_context_interleaved(query, top_k=5, min_score=0.5)
-    debug_context_parsing(context_str)
+    results = evaluate_traversal_quality(test_data)
+    
+    # Optional: Save results
+    if len(sys.argv) > 1 and sys.argv[1] == "--save":
+        import json
+        with open('traversal_evaluation_results.json', 'w', encoding='utf-8') as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+        print("\n💾 Hasil disimpan ke 'traversal_evaluation_results.json'")
