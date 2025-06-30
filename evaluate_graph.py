@@ -115,8 +115,10 @@ def evaluate_pure_traversal(ground_truth_data: list[dict]):
             # Langkah 3: Verifikasi apakah semua 'must_have' chunk ada dalam hasil Record
             missing_chunks = []
             for required in must_have:
-                # Sesuaikan nama kunci dengan yang ada di 'RETURN' kueri get_full_context_from_info
-                required_key = f"{required}_text" if required != 'tafsir' else "tafsir_text"
+                # ==========================================================
+                # PERBAIKAN DI SINI: Menyederhanakan pembuatan nama kunci
+                required_key = f"{required}_text"
+                # ==========================================================
                 
                 # Cek apakah kunci ada di record dan nilainya tidak kosong (bukan None)
                 if required_key not in traversed_chunks_record or traversed_chunks_record[required_key] is None:
