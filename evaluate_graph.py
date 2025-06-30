@@ -17,20 +17,21 @@ def normalize_id(source_id: str) -> str:
     # Remove emoji dan whitespace berlebih
     normalized = source_id.replace("📘", "").replace("📖", "").strip()
     
-    # Standardize semua variasi delimiter
-    # Pattern 1: "No. X | Kitab:" -> "No. X Kitab:"
+    # Standardize berbagai variasi format
+    # Handle "Hadis X No. Y | Kitab: Z, Bab: W" -> "Hadis X No. Y Kitab: Z | Bab: W"
     if " | Kitab:" in normalized:
         normalized = normalized.replace(" | Kitab:", " Kitab:")
     
-    # Pattern 2: "No. X, Kitab:" -> "No. X Kitab:"  
+    # Handle "Hadis X No. Y, Kitab: Z | Bab: W" -> "Hadis X No. Y Kitab: Z | Bab: W"  
     if ", Kitab:" in normalized:
         normalized = normalized.replace(", Kitab:", " Kitab:")
     
-    # Pattern 3: ", Bab:" -> " | Bab:"
+    # Handle ", Bab:" -> " | Bab:"
     if ", Bab:" in normalized:
         normalized = normalized.replace(", Bab:", " | Bab:")
     
-    # Pattern 4: "| Bab:" -> "| Bab:" (sudah benar)
+    # Handle case untuk Surah (jika ada format aneh)
+    # "Surah: X | Ayat: Y" -> "Surah: X | Ayat: Y" (keep as is)
     
     return normalized.strip()
 
@@ -54,9 +55,20 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
     
     for item in ground_truth_data:
         query = item.get("query")
+        
+        # Handle both old format (expected_ids) and new format (expected_chunks)
         expected_chunks = item.get("expected_chunks", [])
+        if not expected_chunks and "expected_ids" in item:
+            # Convert old format to new format for compatibility
+            expected_chunks = [{"chunk_id": chunk_id} for chunk_id in item["expected_ids"]]
         
         print(f"\n🔍 Query: {query}")
+        print(f"  Expected chunks count: {len(expected_chunks)}")
+        
+        # Debug: Print expected chunks
+        for i, chunk in enumerate(expected_chunks):
+            chunk_id = chunk.get("chunk_id", "")
+            print(f"    {i+1}. {chunk_id}")
         
         # Jalankan retrieval + traversal
         context_str = build_chunk_context_interleaved(query, top_k=10, min_score=0.5)
@@ -71,15 +83,29 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             })
             continue
         
-        # Parse hasil context
-        context_parts = context_str.strip().split('---')
+        # Parse hasil context - lebih robust parsing
         retrieved_sources = []
         
+        # Method 1: Split by "---"
+        context_parts = context_str.strip().split('---')
         for part in context_parts:
             if part.strip():
                 source_id = get_source_from_context_string(part)
                 if source_id:
                     retrieved_sources.append(source_id)
+        
+        # Method 2: Parse dari debug output jika ada
+        lines = context_str.split('\n')
+        for line in lines:
+            if "Konteks utama ditemukan →" in line:
+                # Extract source dari line seperti: "Konteks utama ditemukan → Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)"
+                source = line.split("→")[-1].strip()
+                if source and source not in retrieved_sources:
+                    retrieved_sources.append(source)
+        
+        print(f"  Retrieved sources count: {len(retrieved_sources)}")
+        for i, source in enumerate(retrieved_sources):
+            print(f"    {i+1}. {source}")
         
         # Normalize untuk comparison
         retrieved_normalized = set(normalize_id(source) for source in retrieved_sources)
@@ -104,18 +130,29 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
         print(f"  📊 Traversal Success Rate: {success_rate:.2%}")
         print(f"     Found: {len(found_chunks)} / {len(expected_chunks)}")
         
-        # Debug info jika ada yang missing
-        if missing_chunks:
-            print(f"  🔍 Debug - Retrieved sources:")
-            for source in retrieved_sources:
-                print(f"     - {source}")
+        # Debug info detail
+        if missing_chunks or success_rate < 1.0:
             print(f"  🔍 Debug - Retrieved normalized:")
-            for norm in retrieved_normalized:
-                print(f"     - {norm}")
+            for norm in sorted(retrieved_normalized):
+                print(f"     - '{norm}'")
             print(f"  🔍 Debug - Expected normalized:")
             for expected_chunk in expected_chunks:
                 norm = normalize_id(expected_chunk.get("chunk_id", ""))
-                print(f"     - {norm}")
+                print(f"     - '{norm}'")
+            
+            # Check exact matches
+            print(f"  🔍 Debug - Exact match check:")
+            for expected_chunk in expected_chunks:
+                expected_norm = normalize_id(expected_chunk.get("chunk_id", ""))
+                matches = [r for r in retrieved_normalized if r == expected_norm]
+                if matches:
+                    print(f"     ✅ '{expected_norm}' -> Found")
+                else:
+                    print(f"     ❌ '{expected_norm}' -> Not found")
+                    # Check closest matches
+                    closest = [r for r in retrieved_normalized if expected_norm.lower() in r.lower() or r.lower() in expected_norm.lower()]
+                    if closest:
+                        print(f"        🔍 Possible matches: {closest}")
         
         results.append({
             "query": query,
@@ -159,9 +196,40 @@ def evaluate_specific_chunk_requirements(ground_truth_data: list[dict]):
             # Ini memerlukan akses ke database atau hasil traversal yang detail
 
 if __name__ == "__main__":
+    # Test normalisasi dulu
+    print("🔧 Testing normalisasi:")
+    test_cases = [
+        "📘 Hadis Jami` at-Tirmidzi No. 1376 Kitab: Hukum Hudud | Bab: Hukuman liwath (homoseksual)",
+        "Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)",
+        "📖 Surah: An-Nisa' | Ayat: 16",
+        "Surah: An-Nur | Ayat: 2"
+    ]
+    
+    for case in test_cases:
+        normalized = normalize_id(case)
+        print(f"  '{case}' -> '{normalized}'")
+    
+    print("\n" + "="*50)
+    
     # Load ground truth
     with open('ground_truth_graph.json', 'r', encoding='utf-8') as f:
         ground_truth = json.load(f)
+    
+    # Print structure ground truth untuk debug
+    print("🔧 Ground truth structure:")
+    for i, item in enumerate(ground_truth[:2]):  # Just first 2 items
+        print(f"  Item {i}:")
+        print(f"    query: {item.get('query', 'N/A')}")
+        print(f"    has expected_chunks: {'expected_chunks' in item}")
+        print(f"    has expected_ids: {'expected_ids' in item}")
+        if 'expected_chunks' in item:
+            print(f"    expected_chunks count: {len(item['expected_chunks'])}")
+            for j, chunk in enumerate(item['expected_chunks'][:2]):
+                print(f"      {j}: {chunk.get('chunk_id', 'N/A')}")
+        if 'expected_ids' in item:
+            print(f"    expected_ids: {item['expected_ids']}")
+    
+    print("\n" + "="*50)
     
     # Evaluasi traversal
     results = evaluate_traversal_quality(ground_truth)
