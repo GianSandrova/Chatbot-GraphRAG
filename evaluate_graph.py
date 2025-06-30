@@ -71,9 +71,7 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             print(f"    {i+1}. {chunk_id}")
         
         # Jalankan retrieval + traversal
-        start_chunk_id = expected_chunks[0]["chunk_id"]
-        context_str = get_full_context_from_info(start_chunk_id)
-
+        context_str = build_chunk_context_interleaved(query, top_k=10, min_score=0.5)
         
         if not context_str:
             print("  ❌ Tidak ada context yang ditemukan")
