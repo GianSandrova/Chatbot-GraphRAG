@@ -1,5 +1,3 @@
-# evaluate_precision_recall_graph.py
-
 import json
 import os
 import sys
@@ -32,7 +30,7 @@ def run_retrieval_for_query(query: str, history: list = []) -> list[str]:
         if info_id:
             row = get_full_context_from_info(info_id)
             if row:
-                sumber = f"📘 Hadis {row.get('source_name')} No. {row.get('hadith_number')} | Kitab: {row.get('kitab_name', '-')} | Bab: {row.get('bab_name', '-')}"
+                sumber = f"Hadis {row.get('source_name')} No. {row.get('hadith_number')} | Kitab: {row.get('kitab_name', '-')} | Bab: {row.get('bab_name', '-')}"
                 return [sumber]
 
     context_str = build_chunk_context_interleaved(combined_query, top_k=5, min_score=0.6)
@@ -49,9 +47,7 @@ def run_retrieval_for_query(query: str, history: list = []) -> list[str]:
     return retrieved_ids
 
 def evaluate_precision_recall(ground_truth_data: list[dict]):
-    all_precisions = []
     all_recalls = []
-    all_f1s = []
 
     for item in ground_truth_data:
         query = item.get("query")
@@ -72,27 +68,16 @@ def evaluate_precision_recall(ground_truth_data: list[dict]):
         retrieved_set = set(retrieved_ids)
         true_positives = expected_ids.intersection(retrieved_set)
 
-        precision = len(true_positives) / len(retrieved_set) if retrieved_set else 0
         recall = len(true_positives) / len(expected_ids) if expected_ids else 0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
-
-        all_precisions.append(precision)
         all_recalls.append(recall)
-        all_f1s.append(f1)
 
         print(f"\n🔍 Query: {query or queries[-1]}")
-        print(f"  - Precision: {precision:.4f}")
-        print(f"  - Recall   : {recall:.4f}")
-        print(f"  - F1-score : {f1:.4f}")
+        print(f"  - Recall: {recall:.4f}")
+        print(f"  - True Positives: {len(true_positives)} / {len(expected_ids)}")
 
-    avg_precision = sum(all_precisions) / len(all_precisions) if all_precisions else 0
     avg_recall = sum(all_recalls) / len(all_recalls) if all_recalls else 0
-    avg_f1 = sum(all_f1s) / len(all_f1s) if all_f1s else 0
-
-    print("\n📊 Rata-rata Metode:")
-    print(f"Precision: {avg_precision:.4f}")
-    print(f"Recall   : {avg_recall:.4f}")
-    print(f"F1 Score : {avg_f1:.4f}")
+    print("\n📊 Rata-rata Recall:")
+    print(f"Recall: {avg_recall:.4f}")
 
 if __name__ == "__main__":
     with open('ground_truth_graph.json', 'r', encoding='utf-8') as f:
