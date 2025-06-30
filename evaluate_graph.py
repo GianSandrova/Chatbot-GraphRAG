@@ -3,86 +3,69 @@ import os
 import sys
 
 # ==============================================================================
-# BLOCK 1: Impor dari proyek Anda.
-# Pastikan path ini benar dan fungsi-fungsi ini ada.
-# Jika skrip ini dijalankan secara mandiri, bagian ini bisa di-comment.
+# BLOCK 1: Impor dari proyek Anda
 # ==============================================================================
 try:
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'Backend'))
+    # Mengimpor koneksi driver dan fungsi traversal asli Anda
+    from config import driver
     from retrieval.traversal import get_full_context_from_info
-    # Tambahkan impor lain yang relevan dari proyek Anda di sini
-    # Contoh: from retrieval.retrieval import find_quran_node, find_hadith_node
-except ImportError:
-    print("⚠️ Peringatan: Gagal mengimpor dari 'Backend'. Fungsi placeholder akan digunakan.")
-    # Definisikan fungsi placeholder jika impor gagal, agar skrip tetap berjalan
-    def get_full_context_from_info(node_id: str) -> dict:
-        """
-        PLACEHOLDER: Ganti fungsi ini dengan fungsi traversal Anda yang sebenarnya.
-        """
-        print(f"    [Placeholder] Menjalankan traversal dari node '{node_id}'.")
-        if "hadith" in node_id:
-            return {'info': 'Info Hadis', 'text': 'Teks Hadis', 'translation': 'Terjemahan Hadis'}
-        if "quran" in node_id:
-            return {'info': 'Info Quran', 'text': 'Teks Quran', 'translation': 'Terjemahan Quran', 'tafsir': 'Tafsir Quran'}
-        return {}
+except ImportError as e:
+    print(f"❌ Error: Gagal mengimpor dari proyek Anda: {e}")
+    print("Pastikan skrip ini dijalankan dari direktori yang benar dan path sistem sudah sesuai.")
+    sys.exit(1)
 
 # ==============================================================================
-# BLOCK 2: Fungsi Placeholder untuk Pencarian Node Awal.
-# GANTI FUNGSI-FUNGSI INI DENGAN LOGIKA DATABASE ANDA.
+# BLOCK 2: Fungsi Pencarian Node Awal (Bukan Placeholder Lagi)
+# Logika ini dibuat berdasarkan struktur di traversal.py Anda.
 # ==============================================================================
 
 def find_quran_info_node(surah_name: str, ayat_number: int) -> str | None:
     """
-    PLACEHOLDER: Ganti fungsi ini dengan logika untuk mencari ID 'info_node'
-    dari database graph Anda berdasarkan nama surah dan nomor ayat.
+    Mencari ID 'info_node' Quran dari database Neo4j berdasarkan
+    nama surah dan nomor ayat.
     """
-    print(f"    [Placeholder] Mencari info node untuk Surah {surah_name} ayat {ayat_number}.")
-    # TODO: Implementasikan logika pencarian ke database Anda di sini.
-    # Contoh: return "graph_id_for_an-nisa-16"
-    return f"dummy_quran_id_for_{surah_name}_{ayat_number}"
+    query = """
+    MATCH (n:Chunk {source: 'info', surah_name: $surah_name, ayat_number: $ayat_number})
+    RETURN elementId(n) AS id
+    LIMIT 1
+    """
+    try:
+        result = driver.execute_query(
+            query,
+            {"surah_name": surah_name, "ayat_number": ayat_number}
+        )
+        return result.records[0]["id"] if result.records else None
+    except Exception as e:
+        print(f"❌ Error saat mencari node Quran: {e}")
+        return None
 
 def find_hadith_info_node(source_name: str, hadith_number: int) -> str | None:
     """
-    PLACEHOLDER: Ganti fungsi ini dengan logika untuk mencari ID 'info_node'
-    dari database graph Anda berdasarkan nama kitab dan nomor hadis.
+    Mencari ID 'info_node' Hadis dari database Neo4j berdasarkan
+    nama sumber dan nomor hadis.
     """
-    print(f"    [Placeholder] Mencari info node untuk Hadis {source_name} No. {hadith_number}.")
-    # TODO: Implementasikan logika pencarian ke database Anda di sini.
-    # Contoh: return "graph_id_for_tirmidzi_1376"
-    return f"dummy_hadith_id_for_{source_name}_{hadith_number}"
+    query = """
+    MATCH (n:Chunk {source: 'info', source_name: $source_name, hadith_number: $hadith_number})
+    RETURN elementId(n) AS id
+    LIMIT 1
+    """
+    try:
+        result = driver.execute_query(
+            query,
+            {"source_name": source_name, "hadith_number": hadith_number}
+        )
+        return result.records[0]["id"] if result.records else None
+    except Exception as e:
+        print(f"❌ Error saat mencari node Hadis: {e}")
+        return None
 
 # ==============================================================================
-# BLOCK 3: Fungsi-Fungsi Pembantu (Helper) Anda.
-# Tidak perlu diubah.
-# ==============================================================================
-
-def normalize_id(source_id: str) -> str:
-    """Normalize format ID untuk matching yang konsisten"""
-    if not source_id:
-        return ""
-    
-    normalized = source_id.replace("📘", "").replace("📖", "").strip()
-    
-    if " | Kitab:" in normalized:
-        normalized = normalized.replace(" | Kitab:", " Kitab:")
-    if ", Kitab:" in normalized:
-        normalized = normalized.replace(", Kitab:", " Kitab:")
-    if ", Bab:" in normalized:
-        normalized = normalized.replace(", Bab:", " | Bab:")
-        
-    return normalized.strip()
-
-# ==============================================================================
-# BLOCK 4: Fungsi Evaluasi Traversal yang Telah Diperbaiki.
-# Fungsi ini sekarang secara akurat mengukur kualitas traversal saja.
+# BLOCK 3: Fungsi Evaluasi Traversal yang Telah Disesuaikan
 # ==============================================================================
 
 def evaluate_pure_traversal(ground_truth_data: list[dict]):
     """
-    Evaluasi murni untuk kualitas traversal.
-    - Mengabaikan retrieval berbasis query.
-    - Memulai langsung dari context ground truth untuk menemukan node awal.
-    - Memverifikasi apakah semua chunk 'must_have' berhasil ditraverse.
+    Evaluasi murni untuk kualitas traversal yang menggunakan fungsi asli Anda.
     """
     total_checks = 0
     successful_checks = 0
@@ -111,7 +94,7 @@ def evaluate_pure_traversal(ground_truth_data: list[dict]):
             print(f"      Harus ada chunk: {must_have}")
 
             start_node_id = None
-            # Langkah 1: Temukan node awal (info node) menggunakan context
+            # Langkah 1: Temukan node awal (info node) menggunakan fungsi yang sudah diisi
             if source_type == "hadith":
                 start_node_id = find_hadith_info_node(context.get("source_name"), context.get("hadith_number"))
             elif source_type == "quran":
@@ -121,20 +104,21 @@ def evaluate_pure_traversal(ground_truth_data: list[dict]):
                 print(f"    ❌ GAGAL: Tidak dapat menemukan node awal di database untuk konteks: {context}")
                 continue
 
-            # Langkah 2: Jalankan traversal dari node awal yang sudah pasti benar
-            traversed_chunks = get_full_context_from_info(start_node_id)
+            # Langkah 2: Jalankan fungsi traversal asli Anda dari traversal.py
+            traversed_chunks_record = get_full_context_from_info(start_node_id)
 
-            if not traversed_chunks:
+            if not traversed_chunks_record:
                 print(f"    ❌ GAGAL: Traversal dari node '{start_node_id}' tidak menghasilkan chunk sama sekali.")
                 continue
 
-            # Langkah 3: Verifikasi apakah semua 'must_have' chunk ada
+            # Langkah 3: Verifikasi apakah semua 'must_have' chunk ada dalam hasil Record
             missing_chunks = []
-            found_chunks_keys = traversed_chunks.keys()
-            
             for required in must_have:
-                # Cek apakah 'info' (dari must_have) ada di dalam keys hasil traversal ('info', 'text', 'translation', etc.)
-                if required.replace('_text', '') not in found_chunks_keys:
+                # Sesuaikan nama kunci dengan yang ada di 'RETURN' kueri get_full_context_from_info
+                required_key = f"{required}_text" if required != 'tafsir' else "tafsir_text"
+                
+                # Cek apakah kunci ada di record dan nilainya tidak kosong (bukan None)
+                if required_key not in traversed_chunks_record or traversed_chunks_record[required_key] is None:
                     missing_chunks.append(required)
 
             if not missing_chunks:
@@ -142,7 +126,7 @@ def evaluate_pure_traversal(ground_truth_data: list[dict]):
                 successful_checks += 1
             else:
                 print(f"    ❌ GAGAL: Traversal tidak lengkap. Chunk yang hilang: {missing_chunks}")
-                print(f"      Ditemukan: {list(found_chunks_keys)}")
+                print(f"      Ditemukan: {[key for key, val in traversed_chunks_record.items() if val is not None]}")
 
     # Skor Akhir
     overall_success_rate = (successful_checks / total_checks) * 100 if total_checks > 0 else 0
@@ -156,8 +140,7 @@ def evaluate_pure_traversal(ground_truth_data: list[dict]):
 
 
 # ==============================================================================
-# BLOCK 5: Main Execution Block.
-# Titik awal eksekusi skrip.
+# BLOCK 4: Main Execution Block
 # ==============================================================================
 
 if __name__ == "__main__":
@@ -168,12 +151,9 @@ if __name__ == "__main__":
             ground_truth_data = json.load(f)
     except FileNotFoundError:
         print(f"❌ Error: File '{ground_truth_filename}' tidak ditemukan.")
-        print("Pastikan file tersebut ada di direktori yang sama dengan skrip ini,")
-        print("dan memiliki struktur yang benar.")
         sys.exit(1)
     except json.JSONDecodeError:
         print(f"❌ Error: Format JSON pada '{ground_truth_filename}' tidak valid.")
         sys.exit(1)
 
-    # Menjalankan evaluasi traversal yang baru dan sudah diperbaiki
     evaluate_pure_traversal(ground_truth_data)
