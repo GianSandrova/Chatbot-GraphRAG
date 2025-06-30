@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'Backend'))
 
@@ -46,26 +47,89 @@ def extract_base_identifier(full_source: str) -> str:
     if "Hadis" in normalized and "No." in normalized:
         # Extract collection and number
         if "Jami` at-Tirmidzi" in normalized:
-            import re
-            match = re.search(r'Hadis Jami` at-Tirmidzi No\. (\d+)', normalized)
+            match = re.search(r'Hadis Jami` at-Tirmidzi No\.?\s*(\d+)', normalized)
             if match:
                 return f"Hadis Jami` at-Tirmidzi No. {match.group(1)}"
+        
+        # Generic hadis pattern
+        match = re.search(r'Hadis ([^N]+) No\.?\s*(\d+)', normalized)
+        if match:
+            collection = match.group(1).strip()
+            number = match.group(2)
+            return f"Hadis {collection} No. {number}"
     
-    # For Quran, keep as is
+    # For Quran, normalize format
     if "Surah:" in normalized:
-        return normalized
+        # Handle various Surah formats
+        # "Surah: An-Nisa' | Ayat: 16" -> "Surah: An-Nisa' | Ayat: 16"
+        # "Surah Al-A'raf Ayat 33" -> "Surah: Al-A'raf | Ayat: 33"
+        
+        if "Ayat:" in normalized:
+            # Already in correct format
+            return normalized
+        elif "Ayat" in normalized:
+            # Convert "Surah Al-A'raf Ayat 33" to "Surah: Al-A'raf | Ayat: 33"
+            parts = normalized.split("Ayat")
+            if len(parts) == 2:
+                surah_part = parts[0].replace("Surah", "Surah:").strip()
+                ayat_part = "Ayat:" + parts[1].strip()
+                return f"{surah_part} | {ayat_part}"
     
     return normalized
 
-def get_source_from_context_string(context_part: str) -> str | None:
-    """Extract source ID dari context string"""
-    header_lines = []
-    for line in context_part.strip().split('\n'):
-        if "Skor Similarity:" in line:
-            break
-        if line.strip():
-            header_lines.append(line.strip())
-    return ' '.join(header_lines) if header_lines else None
+def parse_retrieval_results_from_context(context_str: str) -> list[str]:
+    """Parse hasil retrieval dari context string yang lebih robust"""
+    retrieved_sources = []
+    
+    if not context_str:
+        return retrieved_sources
+    
+    lines = context_str.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        
+        # Method 1: Parse dari "Konteks utama ditemukan →"
+        if "Konteks utama ditemukan →" in line:
+            source = line.split("→")[-1].strip()
+            if source and source not in retrieved_sources:
+                retrieved_sources.append(source)
+                continue
+        
+        # Method 2: Parse dari "🎯 Vector hit →" 
+        if "🎯 Vector hit →" in line:
+            # Extract dari format seperti: "🎯 Vector hit → Chunk 'tafsir' (ID: 4:61faf3a3-1e44-4b2f-a051-c46cc91c49bc:4942)"
+            continue  # Skip, kita ambil dari konteks utama
+        
+        # Method 3: Parse dari info yang ditampilkan
+        if "Info       :" in line:
+            # Extract dari format seperti: "Info       : [INFO Al-A'raf:33] Surah Al-A'raf Ayat 33"
+            match = re.search(r'\[INFO ([^\]]+)\]\s*(.+)', line)
+            if match:
+                # Convert ke format yang konsisten
+                ayat_ref = match.group(1)  # "Al-A'raf:33"
+                full_info = match.group(2)  # "Surah Al-A'raf Ayat 33"
+                
+                # Parse surah dan ayat
+                if ":" in ayat_ref:
+                    surah_name, ayat_num = ayat_ref.split(":", 1)
+                    source = f"Surah: {surah_name} | Ayat: {ayat_num}"
+                    if source not in retrieved_sources:
+                        retrieved_sources.append(source)
+                continue
+        
+        # Method 4: Parse dari hadis info (jika ada)
+        if "Hadis" in line and ("No." in line or "Nomor" in line):
+            # Extract hadis references
+            hadis_match = re.search(r'Hadis ([^N]+) No\.?\s*(\d+)', line)
+            if hadis_match:
+                collection = hadis_match.group(1).strip()
+                number = hadis_match.group(2)
+                source = f"Hadis {collection} No. {number}"
+                if source not in retrieved_sources:
+                    retrieved_sources.append(source)
+    
+    return retrieved_sources
 
 def convert_ground_truth_format(ground_truth_data: list[dict]) -> list[dict]:
     """Convert ground truth dari format lama ke format baru"""
@@ -133,22 +197,8 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             })
             continue
         
-        # Parse hasil context - lebih robust parsing
-        retrieved_sources = []
-        
-        # Method: Parse dari debug output
-        lines = context_str.split('\n')
-        for line in lines:
-            if "Konteks utama ditemukan →" in line:
-                # Extract source dari line seperti: "Konteks utama ditemukan → Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)"
-                source = line.split("→")[-1].strip()
-                if source and source not in retrieved_sources:
-                    retrieved_sources.append(source)
-            elif "Tambahan konteks:" in line:
-                # Handle additional context sources
-                source = line.split(":")[-1].strip()
-                if source and source not in retrieved_sources:
-                    retrieved_sources.append(source)
+        # Parse hasil context dengan method yang lebih robust
+        retrieved_sources = parse_retrieval_results_from_context(context_str)
         
         print(f"  Retrieved sources count: {len(retrieved_sources)}")
         for i, source in enumerate(retrieved_sources):
@@ -158,7 +208,10 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
         retrieved_base_ids = set()
         for source in retrieved_sources:
             base_id = extract_base_identifier(source)
-            retrieved_base_ids.add(base_id)
+            if base_id:  # Only add non-empty base IDs
+                retrieved_base_ids.add(base_id)
+        
+        print(f"  Base IDs from retrieved: {retrieved_base_ids}")
         
         # Check setiap expected chunk
         found_chunks = []
@@ -168,26 +221,54 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
             chunk_id = expected_chunk.get("chunk_id", "")
             expected_base_id = extract_base_identifier(chunk_id)
             
+            print(f"  🔍 Looking for: '{expected_base_id}'")
+            
             # Check exact match atau partial match untuk base identifier
             found = False
             for retrieved_base in retrieved_base_ids:
+                print(f"    Comparing with: '{retrieved_base}'")
+                
                 if expected_base_id == retrieved_base:
                     found = True
+                    print(f"    ✅ Exact match found!")
                     break
-                # Fallback: check if base identifier is contained
-                elif expected_base_id in retrieved_base or retrieved_base in expected_base_id:
-                    # Additional check untuk memastikan ini bukan false positive
-                    if "Hadis" in expected_base_id and "Hadis" in retrieved_base:
-                        # Extract numbers untuk hadis comparison
-                        import re
-                        exp_num = re.search(r'No\. (\d+)', expected_base_id)
-                        ret_num = re.search(r'No\. (\d+)', retrieved_base)
-                        if exp_num and ret_num and exp_num.group(1) == ret_num.group(1):
-                            found = True
-                            break
-                    elif "Surah:" in expected_base_id and "Surah:" in retrieved_base:
+                
+                # Fallback: check similarity untuk hadis
+                elif "Hadis" in expected_base_id and "Hadis" in retrieved_base:
+                    # Extract numbers untuk hadis comparison
+                    exp_num = re.search(r'No\.?\s*(\d+)', expected_base_id)
+                    ret_num = re.search(r'No\.?\s*(\d+)', retrieved_base)
+                    exp_collection = re.search(r'Hadis ([^N]+)', expected_base_id)
+                    ret_collection = re.search(r'Hadis ([^N]+)', retrieved_base)
+                    
+                    if (exp_num and ret_num and exp_num.group(1) == ret_num.group(1) and
+                        exp_collection and ret_collection and 
+                        exp_collection.group(1).strip() == ret_collection.group(1).strip()):
                         found = True
+                        print(f"    ✅ Hadis match found (same collection & number)!")
                         break
+                
+                # Fallback: check similarity untuk Quran
+                elif "Surah:" in expected_base_id and "Surah:" in retrieved_base:
+                    # Extract surah name dan ayat number
+                    exp_surah = re.search(r'Surah:\s*([^|]+)', expected_base_id)
+                    ret_surah = re.search(r'Surah:\s*([^|]+)', retrieved_base)
+                    exp_ayat = re.search(r'Ayat:\s*(\d+)', expected_base_id)
+                    ret_ayat = re.search(r'Ayat:\s*(\d+)', retrieved_base)
+                    
+                    if (exp_surah and ret_surah and exp_ayat and ret_ayat):
+                        exp_surah_name = exp_surah.group(1).strip()
+                        ret_surah_name = ret_surah.group(1).strip()
+                        
+                        # Normalize surah names untuk comparison
+                        exp_surah_normalized = exp_surah_name.replace("'", "").replace("-", "").lower()
+                        ret_surah_normalized = ret_surah_name.replace("'", "").replace("-", "").lower()
+                        
+                        if (exp_surah_normalized == ret_surah_normalized and 
+                            exp_ayat.group(1) == ret_ayat.group(1)):
+                            found = True
+                            print(f"    ✅ Quran match found (same surah & ayat)!")
+                            break
             
             if found:
                 found_chunks.append(expected_chunk)
@@ -201,35 +282,22 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
         print(f"  📊 Traversal Success Rate: {success_rate:.2%}")
         print(f"     Found: {len(found_chunks)} / {len(expected_chunks)}")
         
-        # Debug info detail
-        if missing_chunks or success_rate < 1.0:
-            print(f"  🔍 Debug - Retrieved base IDs:")
-            for base_id in sorted(retrieved_base_ids):
-                print(f"     - '{base_id}'")
-            print(f"  🔍 Debug - Expected base IDs:")
-            for expected_chunk in expected_chunks:
-                base_id = extract_base_identifier(expected_chunk.get("chunk_id", ""))
-                print(f"     - '{base_id}'")
-            
-            # Check exact matches
-            print(f"  🔍 Debug - Match analysis:")
-            for expected_chunk in expected_chunks:
+        # Debug info detail untuk missing chunks
+        if missing_chunks:
+            print(f"  🔍 Debug - Detailed comparison:")
+            for expected_chunk in missing_chunks:
                 expected_base = extract_base_identifier(expected_chunk.get("chunk_id", ""))
-                matches = [r for r in retrieved_base_ids if r == expected_base]
-                if matches:
-                    print(f"     ✅ '{expected_base}' -> Found exact match: {matches[0]}")
-                else:
-                    print(f"     ❌ '{expected_base}' -> Not found")
-                    # Check partial matches
-                    partial = [r for r in retrieved_base_ids if expected_base in r or r in expected_base]
-                    if partial:
-                        print(f"        🔍 Partial matches: {partial}")
+                print(f"     Expected: '{expected_base}'")
+                for retrieved_base in retrieved_base_ids:
+                    print(f"       vs Retrieved: '{retrieved_base}'")
         
         results.append({
             "query": query,
             "success_rate": success_rate,
             "found_chunks": found_chunks,
-            "missing_chunks": missing_chunks
+            "missing_chunks": missing_chunks,
+            "retrieved_sources": retrieved_sources,
+            "context_debug": context_str[:500] + "..." if len(context_str) > 500 else context_str
         })
     
     # Summary
@@ -239,37 +307,29 @@ def evaluate_traversal_quality(ground_truth_data: list[dict]):
     
     return results
 
-def evaluate_specific_chunk_requirements(ground_truth_data: list[dict]):
-    """
-    Evaluasi lebih detail untuk memastikan chunk memenuhi syarat 'must_have'
-    """
-    print("\n🔍 EVALUASI DETAIL CHUNK REQUIREMENTS:")
+def debug_context_parsing(context_str: str):
+    """Debug function untuk melihat proses parsing"""
+    print("🔧 DEBUG CONTEXT PARSING:")
+    print("Raw context preview:")
+    print(context_str[:1000] + "..." if len(context_str) > 1000 else context_str)
+    print("\n" + "="*50)
     
-    for item in ground_truth_data:
-        query = item.get("query")
-        expected_chunks = item.get("expected_chunks", [])
-        
-        print(f"\n Query: {query}")
-        
-        for expected_chunk in expected_chunks:
-            chunk_id = expected_chunk.get("chunk_id")
-            should_resolve_to_info = expected_chunk.get("should_resolve_to_info", False)
-            must_have = expected_chunk.get("must_have", [])
-            context_info = expected_chunk.get("context", {})
-            
-            print(f"  Chunk: {chunk_id}")
-            print(f"    Should resolve to info: {should_resolve_to_info}")
-            print(f"    Must have: {must_have}")
-            print(f"    Context: {context_info}")
+    sources = parse_retrieval_results_from_context(context_str)
+    print(f"Parsed sources ({len(sources)}):")
+    for i, source in enumerate(sources):
+        base_id = extract_base_identifier(source)
+        print(f"  {i+1}. '{source}' -> Base: '{base_id}'")
 
 if __name__ == "__main__":
     # Test normalisasi dulu
     print("🔧 Testing normalisasi:")
     test_cases = [
-        "📘 Hadis Jami` at-Tirmidzi No. 1376 Kitab: Hukum Hudud | Bab: Hukuman liwath (homoseksual)",
+        "📘 Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)",
         "Hadis Jami` at-Tirmidzi No. 1376 | Kitab: Hukum Hudud, Bab: Hukuman liwath (homoseksual)",
         "📖 Surah: An-Nisa' | Ayat: 16",
-        "Surah: An-Nur | Ayat: 2"
+        "Surah: An-Nur | Ayat: 2",
+        "Surah Al-A'raf Ayat 33",  # Test format dari output
+        "Surah Al-Isra' Ayat 32"
     ]
     
     for case in test_cases:
@@ -282,19 +342,13 @@ if __name__ == "__main__":
     with open('ground_truth_graph.json', 'r', encoding='utf-8') as f:
         ground_truth = json.load(f)
     
-    # Print structure ground truth untuk debug
-    print("🔧 Ground truth structure:")
-    for i, item in enumerate(ground_truth[:1]):  # Just first item
-        print(f"  Item {i}:")
-        print(f"    query: {item.get('query', 'N/A')}")
-        print(f"    has expected_chunks: {'expected_chunks' in item}")
-        print(f"    has expected_answers: {'expected_answers' in item}")
-        if 'expected_answers' in item:
-            print(f"    expected_answers count: {len(item['expected_answers'])}")
-            for j, answer in enumerate(item['expected_answers']):
-                print(f"      {j}: {answer.get('id', 'N/A')}")
+    # Test dengan single query dulu
+    single_test = ground_truth[:1]  # Ambil query pertama saja
     
-    print("\n" + "="*50)
+    print("🧪 Testing with single query first...")
+    results = evaluate_traversal_quality(single_test)
     
-    # Evaluasi traversal
-    results = evaluate_traversal_quality(ground_truth)
+    # Test debug parsing juga
+    query = single_test[0]["query"]
+    context_str = build_chunk_context_interleaved(query, top_k=5, min_score=0.5)
+    debug_context_parsing(context_str)
