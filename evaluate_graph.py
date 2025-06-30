@@ -89,45 +89,26 @@ def parse_retrieval_results_from_context(context_str: str) -> list[str]:
     for line in lines:
         line = line.strip()
         
-        # Method 1: Parse dari "Konteks utama ditemukan →"
+        # Method 1: Parse dari "Konteks utama ditemukan →" (untuk hadis dan quran)
         if "Konteks utama ditemukan →" in line:
             source = line.split("→")[-1].strip()
             if source and source not in retrieved_sources:
                 retrieved_sources.append(source)
                 continue
         
-        # Method 2: Parse dari "🎯 Vector hit →" 
-        if "🎯 Vector hit →" in line:
-            # Extract dari format seperti: "🎯 Vector hit → Chunk 'tafsir' (ID: 4:61faf3a3-1e44-4b2f-a051-c46cc91c49bc:4942)"
-            continue  # Skip, kita ambil dari konteks utama
-        
-        # Method 3: Parse dari info yang ditampilkan
-        if "Info       :" in line:
-            # Extract dari format seperti: "Info       : [INFO Al-A'raf:33] Surah Al-A'raf Ayat 33"
-            match = re.search(r'\[INFO ([^\]]+)\]\s*(.+)', line)
-            if match:
-                # Convert ke format yang konsisten
-                ayat_ref = match.group(1)  # "Al-A'raf:33"
-                full_info = match.group(2)  # "Surah Al-A'raf Ayat 33"
-                
-                # Parse surah dan ayat
-                if ":" in ayat_ref:
-                    surah_name, ayat_num = ayat_ref.split(":", 1)
-                    source = f"Surah: {surah_name} | Ayat: {ayat_num}"
-                    if source not in retrieved_sources:
-                        retrieved_sources.append(source)
+        # Method 2: Parse dari "Tambahan konteks:" (untuk hadis tetangga)
+        if "Tambahan konteks:" in line:
+            source = line.split(":")[-1].strip()
+            if source and source not in retrieved_sources:
+                retrieved_sources.append(source)
                 continue
         
-        # Method 4: Parse dari hadis info (jika ada)
-        if "Hadis" in line and ("No." in line or "Nomor" in line):
-            # Extract hadis references
-            hadis_match = re.search(r'Hadis ([^N]+) No\.?\s*(\d+)', line)
-            if hadis_match:
-                collection = hadis_match.group(1).strip()
-                number = hadis_match.group(2)
-                source = f"Hadis {collection} No. {number}"
-                if source not in retrieved_sources:
-                    retrieved_sources.append(source)
+        # Method 3: Parse dari pattern "↪️  Tambahan konteks: Hadis..."
+        if "↪️  Tambahan konteks:" in line:
+            source = line.split(":")[-1].strip()
+            if source and source not in retrieved_sources:
+                retrieved_sources.append(source)
+                continue
     
     return retrieved_sources
 
