@@ -1,18 +1,26 @@
 [
-
-{
-  "category": "Pertanyaan Lain (Spesifik)",
-  "query": "bagaimana islam memandang perbuatan liwath?",
-  "expected_ids": [
-    "📘 Hadis Jami` at-Tirmidzi No. 1376 Kitab: Hukum Hudud | Bab: Hukuman liwath (homoseksual)",
-    "📖 Surah: An-Nisa' | Ayat: 16"
-  ],
-  "must_have": ["info_text", "text_text", "translation_text"],
-  "context": {
-    "kitab_name": "Hukum Hudud",
-    "bab_name": "Hukuman liwath (homoseksual)",
-    "source_name": "Jami` at-Tirmidzi",
-    "hadith_number": 1376
+  {
+    "category": "Pertanyaan Lain (Spesifik)",
+    "query": "bagaimana islam memandang perbuatan liwath?",
+    "expected_answers": [
+      {
+        "id": "📘 Hadis Jami` at-Tirmidzi No. 1376",
+        "must_have": ["info", "text", "translation"],
+        "context": {
+          "source_type": "hadith",
+          "source_name": "Jami` at-Tirmidzi",
+          "hadith_number": 1376
+        }
+      },
+      {
+        "id": "📖 Surah: An-Nisa' | Ayat: 16",
+        "must_have": ["info", "text", "translation", "tafsir"],
+        "context": {
+          "source_type": "quran",
+          "surah_name": "An-Nisa'",
+          "ayat_number": 16
+        }
+      }
+    ]
   }
-}
 ]
