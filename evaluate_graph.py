@@ -185,9 +185,9 @@ if __name__ == "__main__":
     print("== HASIL AKHIR EVALUASI ==")
     total_queries = len(ground_truth)
     coverage_count = results['coverage_evaluated_count']
-    print(f"== Jumlah Query Total         : {total_queries}")
-    print(f"== Skor MRR Rata-rata         : {results['avg_mrr']:.4f}")
+    # print(f"== Jumlah Query Total         : {total_queries}")
+    # print(f"== Skor MRR Rata-rata         : {results['avg_mrr']:.4f}")
     print("-" * 50)
-    print(f"== Evaluasi Coverage Dilakukan  : {coverage_count} dari {total_queries} query ({coverage_count/total_queries:.1%})")
+    # print(f"== Evaluasi Coverage Dilakukan  : {coverage_count} dari {total_queries} query ({coverage_count/total_queries:.1%})")
     print(f"== Rata-rata Recall           : {results['avg_recall']:.4f}")
     print("=" * 50)

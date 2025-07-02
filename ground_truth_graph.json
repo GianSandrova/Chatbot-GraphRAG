@@ -257,5 +257,163 @@
         ]
       }
     ]
-  }
+  },
+  {
+  "category": "Bahasa Kolokial",
+  "query": "Hadis mana yang menyatakan bahwa tidak ada wasiat bagi ahli waris?",
+  "valid_retrievals": [
+    {
+      "mrr_id": "Hadis Jami` at-Tirmidzi No. 2046",
+      "coverage_ids": [
+        "[INFO Jami` at-Tirmidzi No. 2046]",
+        "[Teks Arab Jami` at-Tirmidzi No. 2046]",
+        "[Terjemahan Jami` at-Tirmidzi No. 2046]"
+      ]
+    },
+    {
+      "mrr_id": "Hadis Shahih Bukhari No. 2535",
+      "coverage_ids": [
+        "[INFO Shahih Bukhari No. 2535]",
+        "[Teks Arab Shahih Bukhari No. 2535]",
+        "[Terjemahan Shahih Bukhari No. 2535]"
+      ]
+    },
+    {
+      "mrr_id": "Hadis Jami` at-Tirmidzi No. 2045",
+      "coverage_ids": [
+        "[INFO Jami` at-Tirmidzi No. 2045]",
+        "[Teks Arab Jami` at-Tirmidzi No. 2045]",
+        "[Terjemahan Jami` at-Tirmidzi No. 2045]"
+      ]
+    }
+  ]
+},
+  {
+    "category": "Bahasa Kolokial",
+    "query": "Apa yang diceritakan pada surah Al-Fil",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 1",
+        "coverage_ids": [
+          "[INFO Al-Fil:1]",
+          "[text Al-Fil:1]",
+          "[translation Al-Fil:1]",
+          "[tafsir Al-Fil:1]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 2",
+        "coverage_ids": [
+          "[INFO Al-Fil:2]",
+          "[text Al-Fil:2]",
+          "[translation Al-Fil:2]",
+          "[tafsir Al-Fil:2]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 3",
+        "coverage_ids": [
+          "[INFO Al-Fil:3]",
+          "[text Al-Fil:3]",
+          "[translation Al-Fil:3]",
+          "[tafsir Al-Fil:3]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 4",
+        "coverage_ids": [
+          "[INFO Al-Fil:4]",
+          "[text Al-Fil:4]",
+          "[translation Al-Fil:4]",
+          "[tafsir Al-Fil:4]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 5",
+        "coverage_ids": [
+          "[INFO Al-Fil:5]",
+          "[text Al-Fil:5]",
+          "[translation Al-Fil:5]",
+          "[tafsir Al-Fil:5]"
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "Siapakah pasukan bergajah yang dimaksud dalam surah itu?",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 1",
+        "coverage_ids": [
+          "[INFO Al-Fil:1]",
+          "[text Al-Fil:1]",
+          "[translation Al-Fil:1]",
+          "[tafsir Al-Fil:1]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: Al-Fil | Ayat: 2",
+        "coverage_ids": [
+          "[INFO Al-Fil:2]",
+          "[text Al-Fil:2]",
+          "[translation Al-Fil:2]",
+          "[tafsir Al-Fil:2]"
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "Apakah hukuman itu berlaku untuk semua nilai barang curian?",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Surah: Al-Ma'idah | Ayat: 38",
+        "coverage_ids": [
+          "[INFO Al-Ma'idah:38]",
+          "[text Al-Ma'idah:38]",
+          "[translation Al-Ma'idah:38]",
+          "[tafsir Al-Ma'idah:38]"
+        ]
+      },
+      {
+        "mrr_id": "Hadis Jami` at-Tirmidzi No. 1366",
+        "coverage_ids": [
+          "[INFO Jami` at-Tirmidzi No. 1366]",
+          "[Teks Arab Jami` at-Tirmidzi No. 1366]",
+          "[Terjemahan Jami` at-Tirmidzi No. 1366]"
+        ]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 6291",
+        "coverage_ids": [
+          "[INFO Shahih Bukhari No. 6291]",
+          "[Teks Arab Shahih Bukhari No. 6291]",
+          "[Terjemahan Shahih Bukhari No. 6291]"
+        ]
+      }
+    ]
+  },
+  {
+  "category": "Bahasa Kolokial",
+  "query": "Gimana sih aturannya kalo ada cewek nawarin diri buat dinikahin?",
+  "valid_retrievals": [
+    {
+      "mrr_id": "Hadis Shahih Bukhari No. 4726",
+      "coverage_ids": [
+        "[INFO Shahih Bukhari No. 4726]",
+        "[Teks Arab Shahih Bukhari No. 4726]",
+        "[Terjemahan Shahih Bukhari No. 4726]"
+      ]
+    },
+    {
+      "mrr_id": "Hadis Shahih Bukhari No. 4721",
+      "coverage_ids": [
+        "[INFO Shahih Bukhari No. 4721]",
+        "[Teks Arab Shahih Bukhari No. 4721]",
+        "[Terjemahan Shahih Bukhari No. 4721]"
+      ]
+    }
+  ]
+}
 ]
