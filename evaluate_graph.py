@@ -167,7 +167,7 @@ def calculate_combined_metrics(ground_truth_data: List[Dict]):
     }
 
 if __name__ == "__main__":
-    GT_FILE = 'ground_truth_coverage.json' # Pastikan nama file sesuai
+    GT_FILE = 'ground_truth_graph.json' # Pastikan nama file sesuai
     print("=" * 50)
     print("== Memulai Evaluasi Gabungan (MRR & Graph Coverage) ==")
     print("=" * 50)
