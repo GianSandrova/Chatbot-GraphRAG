@@ -4,8 +4,8 @@ import os
 import sys
 from typing import Dict, List, Set, Tuple, Any
 
-# Tambahkan path proyek ke sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'Backend')))
 
 # ==============================================================================
 # == BAGIAN 1: IMPORT DARI SISTEM RETRIEVAL ANDA                             ==
