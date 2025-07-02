@@ -1,25 +1,260 @@
 [
   {
-    "category": "Pertanyaan Lain (Spesifik)",
-    "query": "bagaimana islam memandang perbuatan liwath?",
-    "expected_answers": [
+    "category": "Pertanyaan Langsung",
+    "query": "apa isi surah al-fatihah ayat 7",
+    "expected_mrr_id": "Surah: Al-Fatihah | Ayat: 7",
+    "expected_graph_coverage_ids": [
+      "[INFO Al-Fatihah:7]",
+      "[text Al-Fatihah:7]",
+      "[translation Al-Fatihah:7]",
+      "[tafsir Al-Fatihah:7]"
+    ]
+  },
+  {
+    "category": "Pertanyaan Langsung",
+    "query": "bunyi hadis shahih bukhari nomor 1",
+    "expected_mrr_id": "Hadis Shahih Bukhari No. 1",
+    "expected_graph_coverage_ids": [
+      "[INFO Shahih Bukhari No. 1]",
+      "[Teks Arab Shahih Bukhari No. 1]",
+      "[Terjemahan Shahih Bukhari No. 1]"
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+    "query": "bagaimana cara rasulullah tidur",
+    "valid_retrievals": [
       {
-        "id": "📘 Hadis Jami` at-Tirmidzi No.1376",
-        "must_have": ["info", "text", "translation"],
-        "context": {
-          "source_type": "hadith",
-          "source_name": "Jami` at-Tirmidzi",
-          "hadith_number": 1376
-        }
+        "mrr_id": "Hadis Shahih Bukhari No. 5813",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 5813]", "[Teks Arab Shahih Bukhari No. 5813]", "[Terjemahan Shahih Bukhari No. 5813]"]
       },
       {
-        "id": "📖 Surah: An-Nisa' | Ayat: 16",
-        "must_have": ["info", "text", "translation", "tafsir"],
-        "context": {
-          "source_type": "quran",
-          "surah_name": "An-Nisa'",
-          "ayat_number": 16
+        "mrr_id": "Hadis Shahih Bukhari No. 114",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 114]", "[Teks Arab Shahih Bukhari No. 114]", "[Terjemahan Shahih Bukhari No. 114]"]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 6314",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 6314]", "[Teks Arab Shahih Bukhari No. 6314]", "[Terjemahan Shahih Bukhari No. 6314]"]
+      }
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+    "query": "apa doa masuk wc",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Hadis Jami` at-Tirmidzi No. 5",
+        "coverage_ids": ["[INFO Jami` at-Tirmidzi No. 5]", "[Teks Arab Jami` at-Tirmidzi No. 5]", "[Terjemahan Jami` at-Tirmidzi No. 5]"]
+      },
+      {
+        "mrr_id": "Hadis Jami` at-Tirmidzi No. 6",
+        "coverage_ids": ["[INFO Jami` at-Tirmidzi No. 6]", "[Teks Arab Jami` at-Tirmidzi No. 6]", "[Terjemahan Jami` at-Tirmidzi No. 6]"]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 142",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 142]", "[Teks Arab Shahih Bukhari No. 142]", "[Terjemahan Shahih Bukhari No. 142]"]
+      }
+    ]
+  },
+  {
+    "category": "Pertanyaan General",
+    "query": "apa yang dimaksud dengan jalan yang lurus dalam islam",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Surah: Al-Fatihah | Ayat: 6",
+        "coverage_ids": ["[INFO Al-Fatihah:6]", "[text Al-Fatihah:6]", "[translation Al-Fatihah:6]", "[tafsir Al-Fatihah:6]"]
+      },
+      {
+        "mrr_id": "Surah: Al-Fatihah | Ayat: 7",
+        "coverage_ids": ["[INFO Al-Fatihah:7]", "[text Al-Fatihah:7]", "[translation Al-Fatihah:7]", "[tafsir Al-Fatihah:7]"]
+      },
+      {
+        "mrr_id": "Surah: Yasin | Ayat: 4",
+        "coverage_ids": ["[INFO Yasin:4]", "[text Yasin:4]", "[translation Yasin:4]", "[tafsir Yasin:4]"]
+      },
+      {
+        "mrr_id": "Surah: Az-Zukhruf | Ayat: 64",
+        "coverage_ids": ["[INFO Az-Zukhruf:64]", "[text Az-Zukhruf:64]", "[translation Az-Zukhruf:64]", "[tafsir Az-Zukhruf:64]"]
+      }
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "bagaimana cara wudhu Rasulullah yang benar",
+    "valid_retrievals": [
+        {
+            "mrr_id": "Surah: Al-Ma'idah | Ayat: 6",
+            "coverage_ids": ["[INFO Al-Ma'idah:6]", "[text Al-Ma'idah:6]", "[translation Al-Ma'idah:6]", "[tafsir Al-Ma'idah:6]"]
+        },
+        {
+            "mrr_id": "Hadis Shahih Bukhari No. 159",
+            "coverage_ids": ["[INFO Shahih Bukhari No. 159]", "[Teks Arab Shahih Bukhari No. 159]", "[Terjemahan Shahih Bukhari No. 159]"]
         }
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "jangan deketin zina, itu ayat mana ya?",
+    "expected_mrr_id": "Surah: Al-Isra' | Ayat: 32",
+    "expected_graph_coverage_ids": [
+        "[INFO Al-Isra':32]", "[text Al-Isra':32]", "[translation Al-Isra':32]", "[tafsir Al-Isra':32]"
+    ]
+  },
+  {
+    "category": "Bahasa Kolokial",
+    "query": "gimana sih aturannya kalo ada cewek nawarin diri buat dinikahin?",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 4726",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 4726]", "[Teks Arab Shahih Bukhari No. 4726]", "[Terjemahan Shahih Bukhari No. 4726]"]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 4721",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 4721]", "[Teks Arab Shahih Bukhari No. 4721]", "[Terjemahan Shahih Bukhari No. 4721]"]
+      }
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Saya pernah dengar cerita seorang sahabat yang mendatangi Nabi dan mengaku berzina, lalu dirajam. Bisa tolong carikan hadisnya di Bukhari?",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 6633",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 6633]", "[Teks Arab Shahih Bukhari No. 6633]", "[Terjemahan Shahih Bukhari No. 6633]"]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 6430",
+        "coverage_ids": ["[INFO Shahih Bukhari No. 6430]", "[Teks Arab Shahih Bukhari No. 6430]", "[Terjemahan Shahih Bukhari No. 6430]"]
+      }
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Dalam Al-Quran kan ada larangan untuk tidak hanya melakukan zina, tapi bahkan mendekatinya saja tidak boleh. Di surah mana ayat spesifik yang melarang 'mendekati' perbuatan itu?",
+    "expected_mrr_id": "Surah: Al-Isra' | Ayat: 32",
+    "expected_graph_coverage_ids": [
+        "[INFO Al-Isra':32]", "[text Al-Isra':32]", "[translation Al-Isra':32]", "[tafsir Al-Isra':32]"
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Teman saya beli budak dari pasar, ternyata budaknya lagi hamil. Dia gak boleh langsung 'make' kan ya? Kayaknya ada hadis Tirmidzi soal ini.",
+    "valid_retrievals": [
+        {
+            "mrr_id": "Hadis Jami` at-Tirmidzi No. 1050",
+            "coverage_ids": ["[INFO Jami` at-Tirmidzi No. 1050]", "[Teks Arab Jami` at-Tirmidzi No. 1050]", "[Terjemahan Jami` at-Tirmidzi No. 1050]"]
+        },
+        {
+            "mrr_id": "Hadis Jami` at-Tirmidzi No. 1489",
+            "coverage_ids": ["[INFO Jami` at-Tirmidzi No. 1489]", "[Teks Arab Jami` at-Tirmidzi No. 1489]", "[Terjemahan Jami` at-Tirmidzi No. 1489]"]
+        }
+    ]
+  },
+  {
+    "category": "Pertanyaan Lain (Sebab Turunnya Ayat)",
+    "query": "apa sebab turunnya ayat tentang larangan mendekati shalat saat mabuk?",
+    "valid_retrievals": [
+        {
+            "mrr_id": "Surah: An-Nisa' | Ayat: 43",
+            "coverage_ids": ["[INFO An-Nisa':43]", "[text An-Nisa':43]", "[translation An-Nisa':43]", "[tafsir An-Nisa':43]"]
+        },
+        {
+            "mrr_id": "Hadis Jami` at-Tirmidzi No. 2952",
+            "coverage_ids": ["[INFO Jami` at-Tirmidzi No. 2952]", "[Teks Arab Jami` at-Tirmidzi No. 2952]", "[Terjemahan Jami` at-Tirmidzi No. 2952]"]
+        }
+    ]
+  },
+    {
+    "category": "Pertanyaan Langsung",
+    "query": "jelaskan kandungan surah an-nur ayat 2",
+    "expected_mrr_id": "Surah: An-Nur | Ayat: 2",
+    "expected_graph_coverage_ids": [
+        "[INFO An-Nur:2]", "[text An-Nur:2]", "[translation An-Nur:2]", "[tafsir An-Nur:2]"
+    ]
+  },
+    {
+    "category": "Pertanyaan General",
+    "query": "hukum cambuk bagi pezinah",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Surah: An-Nur | Ayat: 2",
+        "coverage_ids": [
+          "[INFO An-Nur:2]",
+          "[text An-Nur:2]",
+          "[translation An-Nur:2]",
+          "[tafsir An-Nur:2]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: An-Nur | Ayat: 3",
+        "coverage_ids": [
+          "[INFO An-Nur:3]",
+          "[text An-Nur:3]",
+          "[translation An-Nur:3]",
+          "[tafsir An-Nur:3]"
+        ]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 6329",
+        "coverage_ids": [
+          "[INFO Shahih Bukhari No. 6329]",
+          "[Teks Arab Shahih Bukhari No. 6329]",
+          "[Terjemahan Shahih Bukhari No. 6329]"
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Dengan Cerita/Konteks",
+    "query": "Al-Quran mengatur hukuman fisik bagi pelaku zina, yaitu dicambuk. Di surah dan ayat berapa aturan hukuman cambuk ini disebutkan?",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Surah: An-Nur | Ayat: 2",
+        "coverage_ids": [
+          "[INFO An-Nur:2]",
+          "[text An-Nur:2]",
+          "[translation An-Nur:2]",
+          "[tafsir An-Nur:2]"
+        ]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 6329",
+        "coverage_ids": [
+          "[INFO Shahih Bukhari No. 6329]",
+          "[Teks Arab Shahih Bukhari No. 6329]",
+          "[Terjemahan Shahih Bukhari No. 6329]"
+        ]
+      },
+      {
+        "mrr_id": "Hadis Shahih Bukhari No. 2455",
+        "coverage_ids": [
+          "[INFO Shahih Bukhari No. 2455]",
+          "[Teks Arab Shahih Bukhari No. 2455]",
+          "[Terjemahan Shahih Bukhari No. 2455]"
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Pertanyaan Lain (Spesifik)",
+    "query": "bagaimana islam memandang perbuatan liwath?",
+    "valid_retrievals": [
+      {
+        "mrr_id": "Hadis Jami` at-Tirmidzi No. 1376",
+        "coverage_ids": [
+          "[INFO Jami` at-Tirmidzi No. 1376]",
+          "[Teks Arab Jami` at-Tirmidzi No. 1376]",
+          "[Terjemahan Jami` at-Tirmidzi No. 1376]"
+        ]
+      },
+      {
+        "mrr_id": "Surah: An-Nisa' | Ayat: 16",
+        "coverage_ids": [
+          "[INFO An-Nisa':16]",
+          "[text An-Nisa':16]",
+          "[translation An-Nisa':16]",
+          "[tafsir An-Nisa':16]"
+        ]
       }
     ]
   }

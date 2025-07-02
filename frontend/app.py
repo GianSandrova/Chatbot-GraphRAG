@@ -317,16 +317,38 @@ st.title("📖 Chatbot Al-Quran")
 
 with st.sidebar:
     st.header("Tentang Aplikasi")
+
     st.markdown("""
-    Aplikasi chatbot ini membantu Anda memahami Al-Quran dengan:
-    - Tafsir ayat berdasarkan referensi terpercaya
-    - Terjemahan resmi Kemenag RI
-    - Penjelasan kontekstual menggunakan AI
-    """)
-    st.markdown("**Contoh Pertanyaan:**")
-    st.markdown("""
-    - Jelaskan makna Surat Al-Fatihah ayat 1
-    - Apa hukum riba dalam Islam?
+    Aplikasi chatbot ini dirancang untuk membantu Anda memahami isi Al-Qur’an dan Hadis melalui penjelasan yang kontekstual dan mudah dipahami. Sistem ini mengacu pada sumber data resmi dan terverifikasi, yaitu:
+    - Mushaf Al-Qur’an Standar Indonesia (Kemenag RI)
+    - Tafsir versi Tahlili terbitan Kemenag RI
+    - Hadis Shahih Bukhari
+    - Hadis Jami’ at-Tirmidzi
+
+    Oleh karena itu, apabila terdapat perbedaan pandangan antar mazhab, sistem ini hanya menjawab berdasarkan data yang tersedia dalam sumber tersebut, dan tidak mewakili semua pandangan mazhab.
+
+    ### 📌 Cara Menggunakan:
+    - Ketik pertanyaan Anda pada kolom pertanyaan di bagian utama aplikasi.
+    - Klik "Send" untuk mengirimkan dan menerima jawaban.
+    - Aplikasi ini mendukung percakapan berkelanjutan (multi-turn), sehingga Anda dapat bertanya lanjut berdasarkan topik sebelumnya.
+
+    ⚠️ Catatan Penting:
+    - Interpretasi akhir dan pemahaman tetap menjadi tanggung jawab pengguna.
+    - Aplikasi ini tidak dimaksudkan untuk menggantikan fatwa resmi atau pendapat ulama.
+    - Pertanyaan yang dapat dijawab meliputi topik-topik keislaman seperti:
+        - Akidah, Ibadah, Muamalah, Hukum Islam
+        - Sejarah Islam, Akhlak
+        - Ilmu keislaman lainnya seperti Fikih
+    - Jika pertanyaan hanya terdiri dari satu kata atau tidak jelas, sistem akan mencoba menjelaskan **pengertian umum* dari kata tersebut.
+    - Sistem tidak mendukung pertanyaan tentang:
+        - Ilmu Tajwid
+        - Perdebatan antar mazhab secara mendalam
+        - Topik di luar Al-Qur’an dan Hadis (Shahih Bukhari & Jami’ at-Tirmidzi)
+    - ❗ *Pertanyaan yang mengandung unsur provokatif, politik, atau sensitif secara sosial/agama tidak akan dijawab oleh sistem.*
+
+    ### 💬 Contoh Pertanyaan:
+    - Jelaskan makna Surat Al-Fatihah ayat 1  
+    - Apa hukum riba dalam Islam?  
     - Jelaskan tafsir Surat Al-Baqarah ayat 255
     """)
 
